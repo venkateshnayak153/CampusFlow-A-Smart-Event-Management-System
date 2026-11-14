@@ -1,0 +1,45 @@
+{
+  "name": "campusflow-backend",
+  "version": "1.0.0",
+  "description": "CampusFlow Backend API - Event lifecycle & decision engines",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
+  },
+  "keywords": [
+    "campusflow",
+    "events",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.16",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "qrcode": "^1.5.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.4.0",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.1.3",
+    "nodemon": "^3.1.9",
+    "pino-pretty": "^13.0.0",
+    "supertest": "^7.0.0"
+  }
+}
