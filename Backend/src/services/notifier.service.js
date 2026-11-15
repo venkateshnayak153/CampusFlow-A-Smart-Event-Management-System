@@ -7,15 +7,10 @@ import { AUDIT_ACTIONS } from '../config/constants.js';
 class NotifierService {
   constructor() {
     this.transporter = null;
-    this.inMemoryInbox = []; // For test environment
   }
 
   getTransporter() {
     if (this.transporter) return this.transporter;
-
-    if (env.NODE_ENV === 'test') {
-      return null;
-    }
 
     if (env.SMTP_HOST && env.SMTP_USER) {
       this.transporter = nodemailer.createTransport({
@@ -33,14 +28,9 @@ class NotifierService {
   }
 
   async sendEmail({ to, subject, html, text, templateName, entityType, entityId }) {
-    if (env.NODE_ENV === 'test') {
-      this.inMemoryInbox.push({ to, subject, html, text, templateName, sentAt: new Date() });
-      return { success: true, messageId: 'test-msg-id' };
-    }
-
     const transporter = this.getTransporter();
     if (!transporter) {
-      logger.warn({ to, subject }, 'SMTP not configured; email simulated');
+      logger.warn({ to, subject, templateName }, 'SMTP credentials not configured; logging email output for manual testing');
       return { success: true, simulated: true };
     }
 
@@ -65,10 +55,6 @@ class NotifierService {
       });
       return { success: false, error: err.message };
     }
-  }
-
-  clearTestInbox() {
-    this.inMemoryInbox = [];
   }
 }
 
