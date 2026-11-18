@@ -1,24 +1,47 @@
-import { z } from 'zod';
+import { isEmail, isNonEmptyString } from '../middlewares/validate.js';
 
-export const submitClubSchema = z.object({
-  name: z.string().min(2).max(100),
-  description: z.string().max(2000).optional(),
-  department: z.string().max(50).optional(),
-  facultyCoordinators: z
-    .array(
-      z.object({
-        name: z.string().min(2).max(100),
-        email: z.string().email()
-      })
-    )
-    .min(1, 'At least 1 faculty coordinator is required')
-    .max(2, 'Maximum 2 faculty coordinators allowed')
-});
+export function validateSubmitClub(req) {
+  const errors = [];
+  const { name, facultyCoordinators } = req.body || {};
 
-export const addOrganiserSchema = z.object({
-  email: z.string().email()
-});
+  if (!isNonEmptyString(name) || name.trim().length < 2) {
+    errors.push({ field: 'name', message: 'Club name must be at least 2 characters long' });
+  }
 
-export const reasonSchema = z.object({
-  reason: z.string().min(5, 'Reason must be at least 5 characters')
-});
+  if (!Array.isArray(facultyCoordinators) || facultyCoordinators.length < 1 || facultyCoordinators.length > 2) {
+    errors.push({ field: 'facultyCoordinators', message: 'Club must have 1 or 2 faculty coordinators' });
+  } else {
+    facultyCoordinators.forEach((coord, idx) => {
+      if (!coord || !isNonEmptyString(coord.name)) {
+        errors.push({ field: `facultyCoordinators[${idx}].name`, message: 'Coordinator name is required' });
+      }
+      if (!coord || !isEmail(coord.email)) {
+        errors.push({ field: `facultyCoordinators[${idx}].email`, message: 'Valid coordinator email is required' });
+      }
+    });
+  }
+
+  return errors;
+}
+
+export function validateAddOrganiser(req) {
+  const errors = [];
+  const { email } = req.body || {};
+
+  if (!isEmail(email)) {
+    errors.push({ field: 'email', message: 'Valid organiser email is required' });
+  }
+
+  return errors;
+}
+
+export function validateReason(req) {
+  const errors = [];
+  const { reason } = req.body || {};
+
+  if (!isNonEmptyString(reason) || reason.trim().length < 5) {
+    errors.push({ field: 'reason', message: 'Reason must be at least 5 characters long' });
+  }
+
+  return errors;
+}

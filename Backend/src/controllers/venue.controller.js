@@ -32,3 +32,16 @@ export async function createVenue(req, res, next) {
     next(err);
   }
 }
+
+export async function updateVenue(req, res, next) {
+  try {
+    const venue = await venueService.updateVenue(req.params.id, req.body, req.user._id, {
+      requestId: req.id,
+      ip: req.ip,
+      userAgent: req.headers['user-agent']
+    });
+    return sendSuccess(res, venue);
+  } catch (err) {
+    next(err);
+  }
+}

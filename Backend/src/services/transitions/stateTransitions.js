@@ -7,7 +7,7 @@ import { ERROR_CODES } from '../../errors/errorCodes.js';
  * Brain.md Section 7:
  * "All transitions go through one transition table per entity.
  * Any move not in the table throws INVALID_TRANSITION (409).
- * The table is data, so tests can assert it exhaustively."
+ * The transition table is pure data for predictable state progression."
  */
 
 export const CLUB_TRANSITIONS = {

@@ -4,9 +4,7 @@ import { REGISTRATION_STATUS, REGISTRATION_CANCEL_REASON } from '../config/const
 const ticketSubSchema = new mongoose.Schema(
   {
     ticketId: {
-      type: String,
-      sparse: true,
-      unique: true
+      type: String
     },
     issuedAt: {
       type: Date

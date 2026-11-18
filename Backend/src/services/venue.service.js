@@ -52,5 +52,36 @@ export const venueService = {
         status: e.status
       }))
     };
+  },
+
+  async updateVenue(venueId, updates, actorId, meta = {}) {
+    const venue = await Venue.findById(venueId);
+    if (!venue) {
+      throw new AppError(ERROR_CODES.NOT_FOUND, 404, 'Venue not found');
+    }
+
+    const before = venue.toObject();
+
+    if (updates.name !== undefined) venue.name = updates.name;
+    if (updates.building !== undefined) venue.building = updates.building;
+    if (updates.capacity !== undefined) venue.capacity = updates.capacity;
+    if (updates.facilities !== undefined) venue.facilities = updates.facilities;
+    if (updates.isActive !== undefined) venue.isActive = updates.isActive;
+
+    await venue.save();
+
+    await auditService.log({
+      actorType: 'user',
+      actorId,
+      actorLabel: `Admin:${actorId}`,
+      action: AUDIT_ACTIONS.VENUE_UPDATED,
+      entityType: 'venue',
+      entityId: venue._id,
+      before,
+      after: venue.toObject(),
+      meta
+    });
+
+    return venue;
   }
 };

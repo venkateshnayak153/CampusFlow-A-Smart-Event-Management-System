@@ -42,3 +42,21 @@ export async function getMe(req, res, next) {
     next(err);
   }
 }
+
+export async function changePassword(req, res, next) {
+  try {
+    const result = await authService.changePassword({
+      userId: req.user._id,
+      currentPassword: req.body.currentPassword,
+      newPassword: req.body.newPassword,
+      meta: {
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        requestId: req.id
+      }
+    });
+    return sendSuccess(res, result);
+  } catch (err) {
+    next(err);
+  }
+}

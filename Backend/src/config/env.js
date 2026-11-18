@@ -1,36 +1,47 @@
 import dotenv from 'dotenv';
-import { z } from 'zod';
 
 // Load .env file
 dotenv.config();
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(5000),
-  MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
-  JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
-  JWT_EXPIRES_IN: z.string().default('8h'),
-  QR_HMAC_SECRET: z.string().min(16, 'QR_HMAC_SECRET must be at least 16 characters'),
-  APPROVAL_TOKEN_PEPPER: z.string().min(16, 'APPROVAL_TOKEN_PEPPER must be at least 16 characters'),
-  
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.coerce.number().default(587),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-  MAIL_FROM: z.string().default('CampusFlow <no-reply@college.edu>'),
-  
-  APP_BASE_URL: z.string().url().default('http://localhost:5173'),
-  ALLOWED_EMAIL_DOMAINS: z.string().transform((val) => val.split(',').map((d) => d.trim().toLowerCase())),
-  CORS_ORIGINS: z.string().transform((val) => val.split(',').map((o) => o.trim())),
-  ENABLE_CRON: z.enum(['true', 'false']).default('true').transform((val) => val === 'true')
-});
+const requiredEnvVars = [
+  'MONGODB_URI',
+  'JWT_SECRET',
+  'QR_HMAC_SECRET',
+  'APPROVAL_TOKEN_PEPPER'
+];
 
-const parsed = envSchema.safeParse(process.env);
+const missing = [];
+for (const varName of requiredEnvVars) {
+  if (!process.env[varName] || process.env[varName].trim() === '') {
+    missing.push(varName);
+  }
+}
 
-if (!parsed.success) {
-  console.error('❌ Environment validation failed. Review your .env configuration:');
-  console.error(JSON.stringify(parsed.error.format(), null, 2));
+if (missing.length > 0) {
+  console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
   process.exit(1);
 }
 
-export const env = parsed.data;
+const allowedDomainsRaw = process.env.ALLOWED_EMAIL_DOMAINS || 'students.git.edu,git.edu';
+const corsOriginsRaw = process.env.CORS_ORIGINS || 'http://localhost:5173,http://localhost:3000';
+
+export const env = {
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: parseInt(process.env.PORT, 10) || 5000,
+  MONGODB_URI: process.env.MONGODB_URI,
+  JWT_SECRET: process.env.JWT_SECRET,
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '8h',
+  QR_HMAC_SECRET: process.env.QR_HMAC_SECRET,
+  APPROVAL_TOKEN_PEPPER: process.env.APPROVAL_TOKEN_PEPPER,
+
+  SMTP_HOST: process.env.SMTP_HOST || '',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT, 10) || 587,
+  SMTP_USER: process.env.SMTP_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || '',
+  MAIL_FROM: process.env.MAIL_FROM || 'CampusFlow <no-reply@college.edu>',
+
+  APP_BASE_URL: process.env.APP_BASE_URL || 'http://localhost:5173',
+  ALLOWED_EMAIL_DOMAINS: allowedDomainsRaw.split(',').map((d) => d.trim().toLowerCase()).filter(Boolean),
+  CORS_ORIGINS: corsOriginsRaw.split(',').map((o) => o.trim()).filter(Boolean),
+  ENABLE_CRON: process.env.ENABLE_CRON !== 'false'
+};

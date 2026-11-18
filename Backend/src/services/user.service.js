@@ -50,5 +50,34 @@ export const userService = {
     });
 
     return user;
+  },
+
+  async updateUserByAdmin(userId, updates, adminId, meta = {}) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError(ERROR_CODES.NOT_FOUND, 404, 'User not found');
+    }
+
+    const before = user.toObject();
+
+    if (updates.role !== undefined) user.role = updates.role;
+    if (updates.isActive !== undefined) user.isActive = updates.isActive;
+    if (updates.department !== undefined) user.department = updates.department;
+
+    await user.save();
+
+    await auditService.log({
+      actorType: 'user',
+      actorId: adminId,
+      actorLabel: `Admin:${adminId}`,
+      action: AUDIT_ACTIONS.USER_ROLE_CHANGED,
+      entityType: 'user',
+      entityId: user._id,
+      before,
+      after: user.toObject(),
+      meta
+    });
+
+    return user;
   }
 };

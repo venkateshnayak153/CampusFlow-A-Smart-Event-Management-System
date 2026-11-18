@@ -37,9 +37,7 @@ const approvalSchema = new mongoose.Schema(
       ref: 'User'
     },
     tokenHash: {
-      type: String,
-      sparse: true,
-      unique: true
+      type: String
     },
     tokenExpiresAt: Date,
     otpHash: String,

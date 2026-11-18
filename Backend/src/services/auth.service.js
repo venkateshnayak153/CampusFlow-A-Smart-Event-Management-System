@@ -128,5 +128,35 @@ export const authService = {
         year: user.year
       }
     };
+  },
+
+  /**
+   * Change user password
+   */
+  async changePassword({ userId, currentPassword, newPassword, meta = {} }) {
+    const user = await User.findById(userId).select('+passwordHash');
+    if (!user) {
+      throw new AppError(ERROR_CODES.NOT_FOUND, 404, 'User not found');
+    }
+
+    const matches = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!matches) {
+      throw new AppError(ERROR_CODES.UNAUTHENTICATED, 401, 'Current password is incorrect');
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    await auditService.log({
+      actorType: 'user',
+      actorId: user._id,
+      actorLabel: user.email,
+      action: 'USER_PASSWORD_CHANGED',
+      entityType: 'user',
+      entityId: user._id,
+      meta
+    });
+
+    return { message: 'Password changed successfully' };
   }
 };
